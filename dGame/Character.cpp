@@ -517,17 +517,15 @@ void Character::OnZoneLoad()
 
 	const auto maxGMLevel = m_ParentUser->GetMaxGMLevel();
 
-	// This does not apply to the GMs
-	if (maxGMLevel > GAME_MASTER_LEVEL_CIVILIAN) {
-		return;
-	}
-
-	/**
-	 * Restrict old character to 1 million coins 
-	 */	
-	if (HasPermission(PermissionMap::Old)) {
-		if (GetCoins() > 1000000) {
-			SetCoins(1000000);
+	if (maxGMLevel == GAME_MASTER_LEVEL_CIVILIAN) {
+        // This does not apply to the GMs
+        /**
+		* Restrict old character to 1 million coins 
+		*/
+		if (HasPermission(PermissionMap::Old)) {
+			if (GetCoins() > 1000000) {
+				SetCoins(1000000);
+			}
 		}
 	}
 
@@ -537,9 +535,39 @@ void Character::OnZoneLoad()
 		return;
 	}
 
-	// Remove all GM items
-	for (const auto lot : Inventory::GetAllGMItems()) {
-		inventoryComponent->RemoveItem(lot, inventoryComponent->GetLotCount(lot));
+	// modded achievements
+	if (missionComponent != nullptr) {
+        if ((m_ZoneID == 1000) && (missionComponent->GetMissionState(875) != MissionState::MISSION_STATE_COMPLETE)) {
+            // free achievement has not been complete before
+			LOT lot = 10520; // Beta Tester Book
+			auto* item = inventoryComponent->FindItemByLot(lot, Inventory::FindInventoryTypeForLot(lot), false, false);
+
+			if (item == nullptr) {
+				// and book to complete achivement is not in inventory
+				// so add it
+				inventoryComponent->AddItem(lot, 1);
+			}
+		}
+
+        if ((m_ZoneID == 1900) && (missionComponent->GetMissionState(885) != MissionState::MISSION_STATE_COMPLETE)) {
+			// entered nexus tower and nexus tower achievement has not been complete before
+			LOT lot = 10698; // Bradford Rant Book
+			auto* item = inventoryComponent->FindItemByLot(lot, Inventory::FindInventoryTypeForLot(lot), false, false);
+
+			if (item == nullptr) {
+				// and book to complete achivement is not in inventory
+				// so add it
+				inventoryComponent->AddItem(lot, 1);
+			}
+		}
+    }
+
+    if (maxGMLevel == GAME_MASTER_LEVEL_CIVILIAN) {
+        // This does not apply to the GMs
+		// Remove all GM items
+		for (const auto lot : Inventory::GetAllGMItems()) {
+			inventoryComponent->RemoveItem(lot, inventoryComponent->GetLotCount(lot));
+		}
 	}
 }
 
