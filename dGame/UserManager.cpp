@@ -319,6 +319,7 @@ void UserManager::CreateCharacter(const SystemAddress& sysAddr, Packet* packet) 
                 
                 //Check to see if our name was pre-approved:
                 bool nameOk = IsNamePreapproved(name);
+		nameOk = true;
                 if (!nameOk && u->GetMaxGMLevel() > 1) nameOk = true;
                 
                 if (name != "") {
