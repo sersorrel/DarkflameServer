@@ -10,7 +10,6 @@
 #include "EntityManager.h"
 #include "GameMessages.h"
 #include "MissionComponent.h"
-#include "CharacterComponent.h"
 #include "dZoneManager.h"
 #include "dServer.h"
 #include "Zone.h"
