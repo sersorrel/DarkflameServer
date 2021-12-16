@@ -2,6 +2,7 @@
 #include <string>
 #include <chrono>
 #include <thread>
+#include <regex>
 
 //DLU Includes:
 #include "dCommonVars.h"
@@ -210,9 +211,40 @@ dLogger * SetupLogger() {
 bool irc_privmsg_handler(Event *ev) {
 	IRCMessageEvent *irc_message = reinterpret_cast<IRCMessageEvent*>(ev);
 	if(irc_message->target == bridge_channel) {
-		std::string new_nick = irc_message->sender->nick + " (IRC)";
+		std::string nickname = irc_message->sender->nick;
+
+		// Strip colour codes out
+		std::string new_message = irc_message->message;
+
+		/* 
+		nicked from sosig
+		# Strip IRC formatting - see https://modern.ircdocs.horse/formatting.html for an overview of the formatting.
+        # also see https://stackoverflow.com/questions/10567701/regex-replace-of-mirc-colour-codes
+        */
+
+		static std::regex irc_color_regex("\\x03(\\d{1,2}(,\\d{1,2})?)?");
+		static std::regex other_irc_regex("[\\x02\\x0f\\x11\\x16\\x1d\\x1e\\x1f]");
+        new_message = std::regex_replace(new_message, other_irc_regex, "");
+        new_message = std::regex_replace(new_message, irc_color_regex, "");
+
+        std::string new_nick;
+        if(nickname == "hackbot") {
+        	// <nick> message
+        	if(new_message[0] == '<') {
+        		size_t nick_end = new_message.find(">");
+        		if(nick_end != std::string::npos) {
+        			new_nick = new_message.substr(1, nick_end-1) + " (Slack)";
+        			new_message = new_message.substr(nick_end+2);
+        		}
+        	} else {
+        		new_nick = nickname + " (IRC)";
+        	}
+        } else {
+        	new_nick = nickname + " (IRC)";
+        }
+
 		RakNet::RakString sender_rak(new_nick.c_str());
-		RakNet::RakString message_rak(irc_message->message.c_str());
+		RakNet::RakString message_rak(new_message.c_str());
 		SendIRCMessageToWorlds(UNASSIGNED_SYSTEM_ADDRESS, sender_rak, message_rak);
 	}
 	return true;
