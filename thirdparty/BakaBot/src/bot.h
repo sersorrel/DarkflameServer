@@ -8,7 +8,7 @@ class Bot : public EventSink
 public:
 	Bot();
 	Bot(Config *c, Config *l);
-	~Bot();
+	virtual ~Bot();
 
 	virtual void connect(ConnectionDispatcher *d);
 

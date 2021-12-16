@@ -43,7 +43,6 @@ void EventSink::remove_handler(std::string type, std::string id)
 void EventSink::queue_event(Event *e)
 {
 	std::unique_lock<std::mutex> lk(events_mutex);
-	std::cout << "queued event " << e->type << std::endl;
 	events_avail = true;
 	events.push(e);
 	events_avail_cv.notify_one();
