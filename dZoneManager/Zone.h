@@ -190,6 +190,7 @@ public:
 
 	uint32_t GetWorldID() const { return m_WorldID; }
 	[[nodiscard]] std::string GetZoneName() const { return m_ZoneName; }
+	[[nodiscard]] std::string GetZoneDesc() const { return m_ZoneDesc; }
 
 	const NiPoint3& GetSpawnPos() const { return m_Spawnpoint; }
 	const NiQuaternion& GetSpawnRot() const { return m_SpawnpointRotation; }

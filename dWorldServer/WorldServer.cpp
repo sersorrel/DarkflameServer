@@ -713,7 +713,7 @@ void HandlePacketChat(Packet* packet) {
 
 				std::u16string msg_16 = GeneralUtils::ASCIIToUTF16(msg.C_String());
 
-				Game::logger->Log("IRCChat", "%s: %s\n", user.C_String(), msg.C_String());
+				//Game::logger->Log("IRCChat", "%s: %s\n", user.C_String(), msg.C_String());
 				ChatPackets::SendChatMessage(UNASSIGNED_SYSTEM_ADDRESS, 4, user.C_String(), LWOOBJID_EMPTY, true, msg_16);
 
 				break;
