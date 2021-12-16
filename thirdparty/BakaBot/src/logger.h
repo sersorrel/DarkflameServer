@@ -2,7 +2,7 @@
 
 #include <map>
 #include <string>
-#include "export.h"
+#include "sock_export.h"
 
 enum class LogLevel
 {

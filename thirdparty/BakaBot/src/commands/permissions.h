@@ -1,1 +1,0 @@
-bool check_permissions(Bot *bot, User *u, std::string target, std::string perm);

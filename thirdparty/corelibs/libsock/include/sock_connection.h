@@ -8,8 +8,8 @@
 
 #define CAFILE "/etc/ssl/certs/ca-certificates.crt"
 
-#include "socketevent.h"
-#include "export.h"
+#include "sock_socketevent.h"
+#include "sock_export.h"
 
 #ifdef WIN32
 #include "sock-windows.h"

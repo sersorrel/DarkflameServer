@@ -1,6 +1,6 @@
 #pragma once
 
-#include "connection.h"
+#include "sock_connection.h"
 
 class Server
 {
