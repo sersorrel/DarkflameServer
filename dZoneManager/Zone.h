@@ -224,6 +224,7 @@ public:
 	[[nodiscard]] std::string GetZoneName() const { return m_ZoneName; }
 	std::string GetZoneRawPath() const { return m_ZoneRawPath;}
 	std::string GetZonePath() const { return m_ZonePath; }
+	[[nodiscard]] std::string GetZoneDesc() const { return m_ZoneDesc; }
 
 	const NiPoint3& GetSpawnPos() const { return m_Spawnpoint; }
 	const NiQuaternion& GetSpawnRot() const { return m_SpawnpointRotation; }

@@ -17,7 +17,7 @@ void ChatPackets::SendIRCMessageToChat(const std::string& sender, const std::str
 	CBITSTREAM;
 	PacketUtils::WriteHeader(bitStream, CHAT_INTERNAL, MSG_CHAT_INTERNAL_IRC_MESSAGE);
 
-	std::string zone_name = dZoneManager::Instance()->GetZone()->GetZoneName();
+	std::string zone_name = dZoneManager::Instance()->GetZone()->GetZoneDesc();
 	std::string sender_with_zone = sender + " (" + zone_name + ")";
 
 	RakNet::RakString sender_rak(sender_with_zone.c_str());
