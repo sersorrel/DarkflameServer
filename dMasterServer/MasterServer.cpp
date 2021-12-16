@@ -455,7 +455,7 @@ void HandlePacket(Packet* packet) {
 		}
 	}
 
-	if (packet->data[1] == MASTER) {
+	if (packet->length >= 4 && packet->data[1] == MASTER) {
 		switch (packet->data[3]) {
 		case MSG_MASTER_REQUEST_PERSISTENT_ID: {
 			Game::logger->Log("MasterServer", "A persistent ID req");

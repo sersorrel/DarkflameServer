@@ -199,7 +199,7 @@ void HandlePacket(Packet* packet) {
 		Game::logger->Log("ChatServer", "A server is connecting, awaiting user list.");
 	}
 
-	if (packet->data[1] == CHAT_INTERNAL) {
+	if (packet->length >= 4 && packet->data[1] == CHAT_INTERNAL) {
 		switch (packet->data[3]) {
 		case MSG_CHAT_INTERNAL_PLAYER_ADDED_NOTIFICATION:
 			playerContainer.InsertPlayer(packet);
@@ -229,7 +229,7 @@ void HandlePacket(Packet* packet) {
 		}
 	}
 
-	if (packet->data[1] == CHAT) {
+	if (packet->length >= 4 && packet->data[1] == CHAT) {
 		switch (packet->data[3]) {
 		case MSG_CHAT_GET_FRIENDS_LIST:
 			ChatPacketHandler::HandleFriendlistRequest(packet);
@@ -298,7 +298,7 @@ void HandlePacket(Packet* packet) {
 		}
 	}
 
-	if (packet->data[1] == WORLD) {
+	if (packet->length >= 4 && packet->data[1] == WORLD) {
 		switch (packet->data[3]) {
 		case MSG_WORLD_CLIENT_ROUTE_PACKET: {
 			Game::logger->Log("ChatServer", "Routing packet from world");
