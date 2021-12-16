@@ -210,7 +210,8 @@ dLogger * SetupLogger() {
 bool irc_privmsg_handler(Event *ev) {
 	IRCMessageEvent *irc_message = reinterpret_cast<IRCMessageEvent*>(ev);
 	if(irc_message->target == bridge_channel) {
-		RakNet::RakString sender_rak(irc_message->sender->nick.c_str());
+		std::string new_nick = irc_message->sender->nick + " (IRC)";
+		RakNet::RakString sender_rak(new_nick.c_str());
 		RakNet::RakString message_rak(irc_message->message.c_str());
 		SendIRCMessageToWorlds(UNASSIGNED_SYSTEM_ADDRESS, sender_rak, message_rak);
 	}
