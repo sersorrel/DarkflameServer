@@ -35,10 +35,20 @@ void LineConnection::handle(uint32_t events)
 			// ??
 			std::cerr << "read returned 0?" << std::endl;
 		}
-		if(r == -1)
+
+		if(r < 0)
 		{
-			std::cerr << errno << std::endl;
+			//fprintf(stderr, "gnutls moment %s\n", gnutls_strerror(r));
+			if(r == GNUTLS_E_AGAIN) {
+				// why????
+				// fprintf(stderr, "gnutls e_again??\n");
+				return;
+			}
+			else {
+				abort();
+			}
 		}
+
 		scratch_len += r;
 
 		char *line_end = NULL;

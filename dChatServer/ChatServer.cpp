@@ -17,6 +17,8 @@
 #include "ChatPacketHandler.h"
 #include "PacketUtils.h"
 
+#include "irc/ircbot.h"
+
 #include "Game.h"
 namespace Game {
 	dLogger* logger;
@@ -91,6 +93,29 @@ int main(int argc, char** argv) {
 
 	Game::chatFilter = new dChatFilter("./res/chatplus_en_us", bool(std::stoi(config.GetValue("dont_generate_dcf"))));
 
+	// Insert bot code
+	ConnectionDispatcher bot_connection;
+
+	Data::add_type("string", new StringType());
+	Data::add_type("int", new IntType());
+	Data::add_type("pair", new PairType());
+	Data::add_type("list", new ListType());
+	Data::add_type("map", new MapType());
+
+	Config *bot_config = nullptr;
+	Config *bot_locale = nullptr;
+	// Create IRC client
+	try {
+		bot_config = new Config("bot_config.cfg");
+		bot_locale = new Config("bot_locale.cfg");
+	} catch(ConfigException e) {
+		Game::logger->Log("IRCClient", e.m_message);
+		return -1;
+	}
+
+	IRCBot *bot = new IRCBot(bot_config, bot_locale);
+	bot->connect(&bot_connection);
+
 	//Run it until server gets a kill message from Master:
 	auto t = std::chrono::high_resolution_clock::now();
 	Packet* packet = nullptr;
@@ -147,10 +172,14 @@ int main(int argc, char** argv) {
 		}
 		else framesSinceLastSQLPing++;
 
+		bot_connection.handle();
+
 		//Sleep our thread since auth can afford to.
 		t += std::chrono::milliseconds(mediumFramerate); //Chat can run at a lower "fps"
 		std::this_thread::sleep_until(t);
 	}
+
+	Data::cleanup_types();
 
 	//Delete our objects here:
 	Database::Destroy();

@@ -5,7 +5,10 @@
 #include <iostream>
 #include "util.h"
 #include "event/bot_events.h"
-#include "logger.h"
+
+#include "Game.h"
+#include "dLogger.h"
+
 #include <algorithm> // for tolower
 #include <iterator>
 
@@ -446,7 +449,7 @@ void IRCConnection::sync_nickserv(User *u)
 	}
 	else
 	{
-		Logger::instance->log("Can't sync nickserv!", LogLevel::ERR);
+		Game::logger->Log("IRCClient", "Can't sync nickserv!");
 		// whois?
 	}
 }
@@ -541,7 +544,7 @@ bool IRCConnection::cb_ns_notice(Event *e)
 		}
 		else
 		{
-			Logger::instance->log("Unknown message '" + ev->message + "' from NickServ!", LogLevel::ERR);
+			Game::logger->Log("IRCClient", "Unknown message '" + ev->message + "' from NickServ!");
 		}
 		return true;
 	}
