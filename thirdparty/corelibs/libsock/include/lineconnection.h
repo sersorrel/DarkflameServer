@@ -1,5 +1,5 @@
-#include "connection.h"
-#include "export.h"
+#include "sock_connection.h"
+#include "sock_export.h"
 
 #define SCRATCH_LENGTH 1024
 

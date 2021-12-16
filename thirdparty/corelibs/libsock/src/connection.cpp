@@ -3,7 +3,7 @@
 #include <sys/types.h>
 
 #include <fcntl.h>
-#include "connection.h"
+#include "sock_connection.h"
 #include <errno.h>
 
 Connection::Connection() {}

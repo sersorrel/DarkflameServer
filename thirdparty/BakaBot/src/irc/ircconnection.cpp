@@ -4,7 +4,7 @@
 #include <cstring>
 #include <iostream>
 #include "util.h"
-#include "events.h"
+#include "event/bot_events.h"
 #include "logger.h"
 #include <algorithm> // for tolower
 #include <iterator>
