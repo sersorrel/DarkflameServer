@@ -274,6 +274,9 @@ foreach (dir ${INCLUDED_DIRECTORIES})
 	include_directories(${PROJECT_SOURCE_DIR}/${dir})
 endforeach()
 
+include_directories(${PROJECT_SOURCE_DIR}/thirdparty/BakaBot/src/)
+include_directories(${PROJECT_SOURCE_DIR}/thirdparty/corelibs/libsock/include/)
+
 # Add linking directories:
 link_directories(${PROJECT_BINARY_DIR})
 
@@ -369,3 +372,32 @@ target_precompile_headers(
 if (${__enable_testing__} MATCHES "1")
 	add_subdirectory(tests)
 endif()
+
+# Thirdparty crap for bakabot
+file(
+GLOB SOURCES_BAKABOT
+LIST_DIRECTORIES false
+RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}"
+${PROJECT_SOURCE_DIR}/thirdparty/BakaBot/src/*.cpp
+${PROJECT_SOURCE_DIR}/thirdparty/BakaBot/src/irc/*.cpp
+${PROJECT_SOURCE_DIR}/thirdparty/BakaBot/src/data/*.cpp
+${PROJECT_SOURCE_DIR}/thirdparty/BakaBot/src/event/*.cpp
+)
+
+# Thirdparty crap for corelibs
+file(
+GLOB SOURCES_CORELIBS
+LIST_DIRECTORIES false
+RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}"
+${PROJECT_SOURCE_DIR}/thirdparty/corelibs/libsock/src/*.cpp
+)
+
+add_library(BakaBot ${SOURCES_BAKABOT})
+add_library(libsock ${SOURCES_CORELIBS})
+
+if(WIN32)
+target_link_libraries(ChatServer ws2_32)
+endif(WIN32)
+
+target_link_libraries(ChatServer BakaBot)
+target_link_libraries(ChatServer libsock)

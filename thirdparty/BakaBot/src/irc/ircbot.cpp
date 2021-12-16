@@ -1,9 +1,6 @@
 #include "ircbot.h"
 #include "util.h"
-#include "admin.h"
 #include "logger.h"
-#include "lua_plugin.h"
-#include "commands/command.h"
 #include <iostream>
 
 IRCBot::IRCBot() : Bot(), conn(NULL)
@@ -152,7 +149,7 @@ void IRCBot::__connect(ConnectionDispatcher *d, std::string server, short port, 
 
 	conn = new IRCConnection(this, server, port, use_ssl);
 
-	add_handler("irc/privmsg", "bot", std::bind(&Bot::cb_command, this, _1));
+	//add_handler("irc/privmsg", "bot", std::bind(&Bot::cb_command, this, _1));
 	add_handler("irc/invite", "bot", std::bind(&IRCBot::cb_invite, this, _1));
 	add_handler("irc/connected", "bot", std::bind(&IRCBot::end_of_motd, this, _1));
 

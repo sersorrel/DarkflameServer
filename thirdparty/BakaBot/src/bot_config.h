@@ -3,7 +3,7 @@
 #include <map>
 #include <fstream>
 #include <memory>
-#include "export.h"
+#include "sock_export.h"
 #include "data/data.h"
 
 PLUGINCLASS ConfigException : public std::exception

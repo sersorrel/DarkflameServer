@@ -1,6 +1,6 @@
 #ifndef WIN32
 
-#include "connection.h"
+#include "sock_connection.h"
 #include <iostream>
 
 ConnectionDispatcher::ConnectionDispatcher()

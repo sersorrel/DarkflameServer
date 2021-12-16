@@ -1,7 +1,7 @@
 #include <string>
 #include <vector>
 #include <fstream>
-#include "config.h"
+#include "bot_config.h"
 #include "logger.h"
 #include "util.h"
 
