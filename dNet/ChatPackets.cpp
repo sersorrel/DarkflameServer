@@ -3,6 +3,7 @@
  * Copyright 2018
  */
 
+#include <map>
 #include "ChatPackets.h"
 #include "RakNetTypes.h"
 #include "BitStream.h"
@@ -10,6 +11,23 @@
 #include "PacketUtils.h"
 #include "dMessageIdentifiers.h"
 #include "dServer.h"
+#include "dZoneManager.h"
+
+void ChatPackets::SendIRCMessageToChat(const std::string& sender, const std::string& message) {
+	CBITSTREAM;
+	PacketUtils::WriteHeader(bitStream, CHAT_INTERNAL, MSG_CHAT_INTERNAL_IRC_MESSAGE);
+
+	std::string zone_name = dZoneManager::Instance()->GetZone()->GetZoneName();
+	std::string sender_with_zone = sender + " (" + zone_name + ")";
+
+	RakNet::RakString sender_rak(sender_with_zone.c_str());
+	RakNet::RakString message_rak(message.c_str());
+
+	bitStream.Write(sender_rak);
+	bitStream.Write(message_rak);
+
+	Game::chatServer->Send(&bitStream, SYSTEM_PRIORITY, RELIABLE, 0, Game::chatSysAddr, false);
+}
 
 void ChatPackets::SendChatMessage(const SystemAddress& sysAddr, char chatChannel, const std::string& senderName, LWOOBJID playerObjectID, bool senderMythran, const std::u16string& message) {
 	CBITSTREAM;
