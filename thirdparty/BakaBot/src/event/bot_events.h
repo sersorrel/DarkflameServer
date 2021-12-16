@@ -1,6 +1,6 @@
 #pragma once
 #include "irc/ircconnection.h"
-#include "export.h"
+#include "sock_export.h"
 #include <vector>
 #include <map>
 #include <functional>

@@ -1,12 +1,9 @@
 #pragma once
-#include "plugin.h"
-#include "events.h"
-#include "config.h"
+#include "event/bot_events.h"
+#include "bot_config.h"
 #include <thread>
 
-class CommandBase;
-
-class Bot : public PluginHost, public EventSink
+class Bot : public EventSink
 {
 public:
 	Bot();
@@ -14,9 +11,6 @@ public:
 	~Bot();
 
 	virtual void connect(ConnectionDispatcher *d);
-	CommandBase *get_command(std::string n);
-	void register_command(std::string n, CommandBase *b);
-	void remove_command(std::string n);
 
 	bool should_stop;
 
@@ -31,7 +25,7 @@ public:
 
 	std::string type;
 
-	bool cb_command(Event *e);
+	bool cb_privmsg(Event *e);
 protected:
 	void init_plugins();
 	void destroy_plugins();
@@ -41,6 +35,4 @@ protected:
 
 	void event_thread_func();
 	std::thread event_thread;
-	std::map<std::string, CommandBase*> commands;
-	Plugin *open_lua(std::string filename);
 };

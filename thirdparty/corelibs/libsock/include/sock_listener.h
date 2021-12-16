@@ -1,6 +1,6 @@
 #pragma once
 
-#include "connection.h"
+#include "sock_connection.h"
 #include <sys/epoll.h>
 #include <sys/types.h>
 #include <sys/socket.h>

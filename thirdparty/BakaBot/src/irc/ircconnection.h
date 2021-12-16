@@ -1,7 +1,9 @@
 #pragma once
 #include "connection.h"
 #include "lineconnection.h"
-#include "export.h"
+
+#include "sock_export.h"
+
 #include "data/ircchannel.h"
 #include <vector>
 #include <set>

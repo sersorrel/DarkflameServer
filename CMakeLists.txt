@@ -179,6 +179,9 @@ include_directories(${PROJECT_SOURCE_DIR}/thirdparty/cpplinq/)
 include_directories(${PROJECT_SOURCE_DIR}/dNet/)
 include_directories(${PROJECT_SOURCE_DIR}/dScripts/)
 
+include_directories(${PROJECT_SOURCE_DIR}/thirdparty/BakaBot/src/)
+include_directories(${PROJECT_SOURCE_DIR}/thirdparty/corelibs/libsock/include/)
+
 # Lib folders:
 link_directories(${PROJECT_BINARY_DIR})
 
@@ -466,6 +469,25 @@ if(MSVC)
     add_compile_options("/wd4267")
 endif(MSVC)
 
+# Thirdparty crap for bakabot
+file(
+GLOB SOURCES_BAKABOT
+LIST_DIRECTORIES false
+RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}"
+${PROJECT_SOURCE_DIR}/thirdparty/BakaBot/src/*.cpp
+${PROJECT_SOURCE_DIR}/thirdparty/BakaBot/src/irc/*.cpp
+${PROJECT_SOURCE_DIR}/thirdparty/BakaBot/src/data/*.cpp
+${PROJECT_SOURCE_DIR}/thirdparty/BakaBot/src/event/*.cpp
+)
+
+# Thirdparty crap for corelibs
+file(
+GLOB SOURCES_CORELIBS
+LIST_DIRECTORIES false
+RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}"
+${PROJECT_SOURCE_DIR}/thirdparty/corelibs/libsock/src/*.cpp
+)
+
 # 3rdparty static libraries:
 #add_library(zlib ${SOURCES_ZLIB})
 add_library(raknet ${SOURCES_RAKNET})
@@ -493,6 +515,9 @@ target_link_libraries(dChatFilter dDatabase)
 if(WIN32)
 target_link_libraries(raknet ws2_32)
 endif(WIN32)
+
+add_library(BakaBot ${SOURCES_BAKABOT})
+add_library(libsock ${SOURCES_CORELIBS})
 
 # Our executables:
 add_executable(WorldServer ${SOURCES})
@@ -559,6 +584,13 @@ if(UNIX)
 target_link_libraries(ChatServer pthread)
 target_link_libraries(ChatServer dl)
 endif(UNIX)
+
+if(WIN32)
+target_link_libraries(ChatServer ws2_32)
+endif(WIN32)
+
+target_link_libraries(ChatServer BakaBot)
+target_link_libraries(ChatServer libsock)
 
 # Compiler flags:
 # Disabled deprecated warnings as the MySQL includes have deprecated code in them. 
