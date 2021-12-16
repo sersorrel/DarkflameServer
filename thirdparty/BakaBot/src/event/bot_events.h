@@ -12,6 +12,7 @@ class Event
 {
 public:
 	Event(std::string type);
+	virtual ~Event() = default;
 	std::string type;
 };
 

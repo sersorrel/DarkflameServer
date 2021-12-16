@@ -41,19 +41,19 @@ Connection::Connection(std::string host, unsigned short port)
     hints.ai_socktype = SOCK_STREAM;
 
     int r = getaddrinfo(host.c_str(), std::to_string(port).c_str(), &hints, &list);
-    if(r > 0)
+    if(r != 0)
     {
-        std::cerr << "getaddrinfo failed" << std::endl;
+        std::cerr << "getaddrinfo failed" << gai_strerror(r) << std::endl;
     }
 
     while(list)
     {
         m_fd = socket(list->ai_family, list->ai_socktype, list->ai_protocol);
+
         if(m_fd != -1)
         {
             if(connect(m_fd, list->ai_addr, (int)list->ai_addrlen) == 0)
             {
-                std::cerr << "connected to " << list->ai_family << std::endl;
                 // we connected!
 				freeaddrinfo(list);
                 return;
@@ -122,6 +122,7 @@ void Connection::handle(char *buf, uint32_t len)
 
 int Connection::read(char* buf, int len)
 {
+	//fprintf(stderr, "Connection::read session=%p buf=%p len=%i\n", session, buf, len);
 	if(ssl)
 	{
 		int l = gnutls_record_recv(session, buf, len);
@@ -132,7 +133,7 @@ int Connection::read(char* buf, int len)
 		int l = recv(m_fd, buf, len, 0);
 		if(l == 0)
 		{
-			std::cerr << "empty socket >:|" << std::endl;
+			fprintf(stderr, "Recv failed????\n");
 			exit(0);
 		}
 		return l;
@@ -143,14 +144,14 @@ int Connection::write(const char* c, size_t l)
 {
     if(ssl)
     {
-		gnutls_record_send(session, c, l);
+		return gnutls_record_send(session, c, l);
 	}
     else
     {
 		int sent = send(m_fd, c, (int)l, 0);
 		if(sent == 0)
 		{
-			std::cerr << "empty socket >:|" << std::endl;
+			fprintf(stderr, "Send failed????\n");
 			exit(0);
 		}
 		return sent;
@@ -167,7 +168,8 @@ void Connection::start_ssl()
 
     gnutls_certificate_credentials_t xcred;
 	gnutls_certificate_allocate_credentials(&xcred);
-    gnutls_certificate_set_x509_trust_file(xcred, CAFILE, GNUTLS_X509_FMT_PEM);
+	gnutls_certificate_set_x509_system_trust(xcred);
+
     gnutls_init(&session, GNUTLS_CLIENT);
     
     gnutls_set_default_priority(session);
@@ -185,7 +187,8 @@ void Connection::start_ssl()
 
     if(ret < 0)
     {
-        throw SocketException();
+    	fprintf(stderr, "gnutls error: %s\n", gnutls_strerror(ret));
+        abort();
     }
     
     type = gnutls_certificate_type_get(session);
@@ -193,6 +196,7 @@ void Connection::start_ssl()
     ret = gnutls_certificate_verification_status_print(status, type, &out, 0);
     if(ret < 0)
     {
-        throw SocketException();
+    	fprintf(stderr, "gnutls error: %s\n", gnutls_strerror(ret));
+        abort();
     }
 }

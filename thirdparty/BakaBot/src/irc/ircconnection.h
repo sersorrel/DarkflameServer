@@ -15,13 +15,14 @@ class Event;
 
 enum IRCState
 {
-	CONNECTED,
-	CAP,
-	PASS,
-	NICK,
-	NICK_TAKEN,
-	USER,
-	ONLINE
+	IRC_NONE,
+	IRC_CONNECTED,
+	IRC_CAP,
+	IRC_PASS,
+	IRC_NICK,
+	IRC_NICK_TAKEN,
+	IRC_USER,
+	IRC_ONLINE
 };
 
 struct IRCServerState

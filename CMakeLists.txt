@@ -381,6 +381,7 @@ RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}"
 ${PROJECT_SOURCE_DIR}/thirdparty/BakaBot/src/*.cpp
 ${PROJECT_SOURCE_DIR}/thirdparty/BakaBot/src/irc/*.cpp
 ${PROJECT_SOURCE_DIR}/thirdparty/BakaBot/src/data/*.cpp
+${PROJECT_SOURCE_DIR}/thirdparty/BakaBot/src/util/*.cpp
 ${PROJECT_SOURCE_DIR}/thirdparty/BakaBot/src/event/*.cpp
 )
 
@@ -401,3 +402,4 @@ endif(WIN32)
 
 target_link_libraries(ChatServer BakaBot)
 target_link_libraries(ChatServer libsock)
+target_link_libraries(ChatServer gnutls)

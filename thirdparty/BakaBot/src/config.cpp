@@ -1,8 +1,11 @@
 #include <string>
 #include <vector>
 #include <fstream>
+
+#include "Game.h"
+#include "dLogger.h"
+
 #include "bot_config.h"
-#include "logger.h"
 #include "util.h"
 
 Config::Config(std::string path)
@@ -180,7 +183,8 @@ Config* Config::load(std::string path)
     }
     catch(ConfigException e)
     {
-        Logger::instance->log(e.m_message, LogLevel::ERR);
+        Game::logger->Log("ChatServer", "IRC config broken" + e.m_message);
+;
     }
     return NULL;
 }
