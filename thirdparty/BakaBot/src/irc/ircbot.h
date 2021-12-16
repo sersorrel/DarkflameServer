@@ -9,7 +9,6 @@ class IRCBot : public Bot
 public:
 	IRCBot();
 	IRCBot(Config *c, Config *l);
-	~IRCBot();
 
 	IRCConnection *conn;
 

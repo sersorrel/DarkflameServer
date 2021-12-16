@@ -14,6 +14,7 @@
 #include "Diagnostics.h"
 
 #include "PlayerContainer.h"
+#include "ChatPackets.h"
 #include "ChatPacketHandler.h"
 #include "PacketUtils.h"
 
@@ -32,6 +33,11 @@ namespace Game {
 
 dLogger* SetupLogger();
 void HandlePacket(Packet* packet);
+void SendIRCMessageToWorlds(const SystemAddress& sysAddr, const RakNet::RakString & sender_rak, const RakNet::RakString& message_rak);
+
+IRCBot *irc_bot = nullptr;
+std::string bridge_channel = "#hacksoc-lego";
+bool irc_privmsg_handler(Event *ev);
 
 PlayerContainer playerContainer;
 
@@ -113,8 +119,9 @@ int main(int argc, char** argv) {
 		return -1;
 	}
 
-	IRCBot *bot = new IRCBot(bot_config, bot_locale);
-	bot->connect(&bot_connection);
+	irc_bot = new IRCBot(bot_config, bot_locale);
+	irc_bot->connect(&bot_connection);
+	irc_bot->add_handler("irc/privmsg", "chat", irc_privmsg_handler);
 
 	//Run it until server gets a kill message from Master:
 	auto t = std::chrono::high_resolution_clock::now();
@@ -143,8 +150,6 @@ int main(int argc, char** argv) {
 			Game::server->DeallocatePacket(packet);
 			packet = nullptr;
 		}
-
-		// Poke IRC here I guess
 
 		//Push our log every 30s:
 		if (framesSinceLastFlush >= 900) {
@@ -180,6 +185,7 @@ int main(int argc, char** argv) {
 	}
 
 	Data::cleanup_types();
+	delete irc_bot;
 
 	//Delete our objects here:
 	Database::Destroy();
@@ -199,6 +205,26 @@ dLogger * SetupLogger() {
 #endif
 
 	return new dLogger(logPath, logToConsole, logDebugStatements);
+}
+
+bool irc_privmsg_handler(Event *ev) {
+	IRCMessageEvent *irc_message = reinterpret_cast<IRCMessageEvent*>(ev);
+	if(irc_message->target == bridge_channel) {
+		RakNet::RakString sender_rak(irc_message->sender->nick.c_str());
+		RakNet::RakString message_rak(irc_message->message.c_str());
+		SendIRCMessageToWorlds(UNASSIGNED_SYSTEM_ADDRESS, sender_rak, message_rak);
+	}
+	return true;
+}
+
+void SendIRCMessageToWorlds(const SystemAddress& sysAddr, const RakNet::RakString & sender_rak, const RakNet::RakString& message_rak) {
+    CBITSTREAM;
+    PacketUtils::WriteHeader(bitStream, CHAT_INTERNAL, MSG_CHAT_INTERNAL_IRC_MESSAGE);
+
+    bitStream.Write(sender_rak);
+    bitStream.Write(message_rak);
+
+    Game::server->Send(&bitStream, sysAddr, true); //send to everyone except origin
 }
 
 void HandlePacket(Packet* packet) {
@@ -236,9 +262,25 @@ void HandlePacket(Packet* packet) {
 		}
 
 		case MSG_CHAT_INTERNAL_IRC_MESSAGE: {
-			// Forward this on as well.
+			// Forward this on as well. We also want to forward it to IRC, so to do this I'm going to reconstruct the packet... hold on
+
 			CINSTREAM;
-			Game::server->Send(&inStream, packet->systemAddress, true); //send to everyone except origin
+			LWOOBJID header;
+            inStream.Read(header);
+
+            RakNet::RakString user;
+            RakNet::RakString msg;
+
+            inStream.Read(user);
+            inStream.Read(msg);
+
+            // Send to other world servers
+     		SendIRCMessageToWorlds(packet->systemAddress, user, msg);
+
+            // Send to IRC
+            std::string irc_message = "<" + std::string(user.C_String()) + "> " + msg.C_String();
+            irc_bot->send_message(bridge_channel, irc_message);
+
 			break;
 		}
 
