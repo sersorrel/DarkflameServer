@@ -23,7 +23,7 @@
 #include <sys/stat.h>
 
 #include "util.h"
-#include "export.h"
+#include "sock_export.h"
 
 namespace util
 {
@@ -79,7 +79,7 @@ namespace util
 		return size * nmemb;
 	}
 
-	std::string http_request(std::string url, CURL *easy)
+	/*std::string http_request(std::string url, CURL *easy)
 	{
 		curl_easy_setopt(easy, CURLOPT_URL, url.c_str());
 
@@ -124,7 +124,7 @@ namespace util
 	PLUGINEXPORT std::string http_request(std::string url)
 	{
 		return http_request(url, curl_easy_init());
-	}
+	}*/
 
 	// shamelessly taken from http://www.adp-gmbh.ch/cpp/common/base64.html
 

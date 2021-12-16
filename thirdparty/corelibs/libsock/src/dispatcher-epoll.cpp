@@ -46,7 +46,7 @@ void ConnectionDispatcher::handle()
 	epoll_event events[EPOLL_EVENTS];
 
 	int i = 0;
-	int num = epoll_wait(m_epoll_fd, events, EPOLL_EVENTS, -1);
+	int num = epoll_wait(m_epoll_fd, events, EPOLL_EVENTS, /*-1*/ 0);
 	if (num == -1 && errno != EINTR)
 	{
 		std::cerr << "errno " << errno << std::endl;

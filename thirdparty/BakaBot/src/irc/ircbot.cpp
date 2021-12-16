@@ -1,16 +1,20 @@
 #include "ircbot.h"
 #include "util.h"
-#include "logger.h"
+
 #include <iostream>
 
 IRCBot::IRCBot() : Bot(), conn(NULL)
 {
 	type = "irc";
+	state = IRCState::IRC_NONE;
+	nickserv_done = false;
 }
 
 IRCBot::IRCBot(Config *c, Config *l) : Bot(c, l), conn(NULL)
 {
 	type = "irc";
+	state = IRCState::IRC_NONE;
+	nickserv_done = false;
 }
 
 bool IRCBot::print(Event *e)
@@ -94,7 +98,7 @@ bool IRCBot::cb_cap_done(Event *e)
 	if (pass != "")
 	{
 		conn->send_line("PASS " + pass);
-		state = IRCState::PASS;
+		state = IRCState::IRC_PASS;
 	}
 	else
 	{
@@ -104,7 +108,7 @@ bool IRCBot::cb_cap_done(Event *e)
 
 		conn->nick(nick);
 		conn->send_line("USER " + uname + " * * :" + rname);
-		state = IRCState::USER;
+		state = IRCState::IRC_USER;
 	}
 
 	return false;
@@ -154,7 +158,7 @@ void IRCBot::__connect(ConnectionDispatcher *d, std::string server, short port, 
 	add_handler("irc/connected", "bot", std::bind(&IRCBot::end_of_motd, this, _1));
 
 	d->add(conn);
-	state = IRCState::CONNECTED;
+	state = IRCState::IRC_CONNECTED;
 
 	std::vector<std::string> caps;
 
@@ -167,7 +171,7 @@ void IRCBot::__connect(ConnectionDispatcher *d, std::string server, short port, 
 	}
 
 	conn->do_cap(caps);
-	state = IRCState::CAP;
+	state = IRCState::IRC_CAP;
 
 	add_handler("irc/cap_done", "bot", std::bind(&IRCBot::cb_cap_done, this, _1));
 	add_handler("irc/sasl", "bot", std::bind(&IRCBot::cb_sasl, this, _1));
