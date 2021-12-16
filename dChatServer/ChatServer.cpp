@@ -15,6 +15,7 @@
 
 #include "PlayerContainer.h"
 #include "ChatPacketHandler.h"
+#include "PacketUtils.h"
 
 #include "Game.h"
 namespace Game {
@@ -118,6 +119,8 @@ int main(int argc, char** argv) {
 			packet = nullptr;
 		}
 
+		// Poke IRC here I guess
+
 		//Push our log every 30s:
 		if (framesSinceLastFlush >= 900) {
 			Game::logger->Flush();
@@ -198,6 +201,13 @@ void HandlePacket(Packet* packet) {
 
 		case MSG_CHAT_INTERNAL_ANNOUNCEMENT: {
 			//we just forward this packet to every connected server
+			CINSTREAM;
+			Game::server->Send(&inStream, packet->systemAddress, true); //send to everyone except origin
+			break;
+		}
+
+		case MSG_CHAT_INTERNAL_IRC_MESSAGE: {
+			// Forward this on as well.
 			CINSTREAM;
 			Game::server->Send(&inStream, packet->systemAddress, true); //send to everyone except origin
 			break;
