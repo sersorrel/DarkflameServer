@@ -51,7 +51,7 @@ std::string PacketUtils::ReadString(uint32_t startLoc, Packet* packet, bool wide
     
     if (packet->length > startLoc) {
         uint32_t i = 0;
-        while (packet->data[startLoc + i] != '\0' && packet->length > (uint32_t)(startLoc + i)) {
+        while (packet->length > (uint32_t)(startLoc + i) && packet->data[startLoc + i] != '\0') {
             readString.push_back(packet->data[startLoc + i]);
             
             if (wide) {
