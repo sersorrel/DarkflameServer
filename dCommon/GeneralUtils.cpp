@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <cassert>
 #include <algorithm>
+#include <codecvt>
 
 template <typename T>
 inline size_t MinSize(size_t size, const std::basic_string<T>& string) {
@@ -40,6 +41,91 @@ inline void PushUTF8CodePoint(std::string& ret, char32_t cp) {
     } else {
         assert(false);
     }
+}
+
+// https://stackoverflow.com/questions/7153935/how-to-convert-utf-8-stdstring-to-utf-16-stdwstring/7154226
+std::u16string GeneralUtils::UTF8ToUTF16(const std::string& utf8)
+{
+    std::vector<unsigned long> unicode;
+    size_t i = 0;
+    while (i < utf8.size())
+    {
+        unsigned long uni;
+        size_t todo;
+        bool error = false;
+        unsigned char ch = utf8[i++];
+        if (ch <= 0x7F)
+        {
+            uni = ch;
+            todo = 0;
+        }
+        else if (ch <= 0xBF)
+        {
+            // probably fucked, continue regardless
+            //throw std::logic_error("not a UTF-8 string");
+            todo = 0;
+            uni = 0xffef;
+        }
+        else if (ch <= 0xDF)
+        {
+            uni = ch&0x1F;
+            todo = 1;
+        }
+        else if (ch <= 0xEF)
+        {
+            uni = ch&0x0F;
+            todo = 2;
+        }
+        else if (ch <= 0xF7)
+        {
+            uni = ch&0x07;
+            todo = 3;
+        }
+        else
+        {
+            todo = 0;
+            uni = 0xffef;
+            // probably fucked, continue regardless
+        }
+        for (size_t j = 0; j < todo; ++j)
+        {
+            if (i == utf8.size())
+            {
+                uni = 0xfffd;
+                break;
+            }
+            unsigned char ch = utf8[i++];
+            if (ch < 0x80 || ch > 0xBF) {
+                uni = 0xfffd;
+                break;
+            }
+            uni <<= 6;
+            uni += ch & 0x3F;
+        }
+
+        if (uni > 0x10FFFF)
+            uni = 0xfffd;
+        unicode.push_back(uni);
+    }
+
+    std::u16string utf16;
+    for (size_t i = 0; i < unicode.size(); ++i)
+    {
+        unsigned long uni = unicode[i];
+        if (uni <= 0xFFFF)
+        {
+            utf16 += (uint16_t)uni;
+        }
+        else
+        {
+            // Cry
+            utf16 += (uint16_t)0xfffd;
+            /*uni -= 0x10000;
+            utf16 += (uint16_t)((uni >> 10) + 0xD800);
+            utf16 += (uint16_t)((uni & 0x3FF) + 0xDC00);*/
+        }
+    }
+    return utf16;
 }
 
 //! Converts an std::string (ASCII) to UCS-2 / UTF-16

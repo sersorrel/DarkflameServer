@@ -28,6 +28,8 @@ namespace GeneralUtils {
      */
     std::u16string ASCIIToUTF16(const std::string& string, size_t size = -1);
 
+    std::u16string UTF8ToUTF16(const std::string& string);
+
     //! Converts a UTF-16 string to a UTF-8 string
     /*!
       \param string The string to convert
