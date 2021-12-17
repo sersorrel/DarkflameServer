@@ -55,7 +55,7 @@ bool IRCBot::cb_sasl(Event *e)
 		RawIRCEvent *ev = reinterpret_cast<RawIRCEvent*>(e);
 		if (ev->params[0] == "+") // ok go
 		{
-			std::string s = "baka";
+			std::string s = uname;
 			s.push_back('\0');
 			s += uname;
 			s.push_back('\0');

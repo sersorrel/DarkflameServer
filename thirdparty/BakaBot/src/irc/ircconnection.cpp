@@ -449,7 +449,7 @@ void IRCConnection::sync_nickserv(User *u)
 	}
 	else
 	{
-		Game::logger->Log("IRCClient", "Can't sync nickserv!");
+		Game::logger->Log("IRCClient", "Can't sync nickserv!\n");
 		// whois?
 	}
 }
@@ -544,7 +544,7 @@ bool IRCConnection::cb_ns_notice(Event *e)
 		}
 		else
 		{
-			Game::logger->Log("IRCClient", "Unknown message '" + ev->message + "' from NickServ!");
+			Game::logger->Log("IRCClient", "Unknown message '" + ev->message + "' from NickServ!\n");
 		}
 		return true;
 	}
@@ -756,6 +756,8 @@ IRCConnection::~IRCConnection()
 
 void IRCConnection::send_line(std::string line)
 {
+	fprintf(stderr, ">>> %s\n", line.c_str());
+
 	line += "\r\n";
 	write(line.c_str(), line.length());
 }
@@ -801,6 +803,8 @@ void IRCConnection::quit(std::string reason)
 // here be dragons
 void IRCConnection::parse_line(std::string line_s, std::string& sender, std::string& command, std::vector<std::string>& params)
 {
+    fprintf(stderr, "<<< %s\n", line_s.c_str());
+
 	char *line = (char*) line_s.c_str(); // thanks, c++11
 
     int len = line_s.length();
