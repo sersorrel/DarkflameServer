@@ -1,5 +1,5 @@
 #pragma once
-#include "connection.h"
+#include "sock_connection.h"
 #include "lineconnection.h"
 
 #include "sock_export.h"
