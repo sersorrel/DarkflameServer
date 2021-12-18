@@ -649,10 +649,14 @@ void HandlePacketChat(Packet* packet) {
 				inStream.Read(user);
 				inStream.Read(msg);
 
+				std::string user_std(user.C_String());
 				std::u16string msg_16 = GeneralUtils::UTF8ToUTF16(msg.C_String());
 
+				if(user_std.length() > 32) {
+					user_std = user_std.substr(0, 32);
+				}
 				//Game::logger->Log("IRCChat", "%s: %s\n", user.C_String(), msg.C_String());
-				ChatPackets::SendChatMessage(UNASSIGNED_SYSTEM_ADDRESS, 4, user.C_String(), LWOOBJID_EMPTY, true, msg_16);
+				ChatPackets::SendChatMessage(UNASSIGNED_SYSTEM_ADDRESS, 4, user_std.c_str(), LWOOBJID_EMPTY, true, msg_16);
 
 				break;
 			}
