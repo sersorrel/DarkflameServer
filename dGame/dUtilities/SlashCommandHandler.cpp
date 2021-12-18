@@ -164,6 +164,156 @@ void SlashCommandHandler::HandleChatCommand(const std::u16string& command, Entit
 	//HANDLE ALL NON GM SLASH COMMANDS RIGHT HERE!
 	//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+	// HackSoc-specific commands start
+
+	if (chatCommand == "help") {
+		ChatPackets::SendSystemMessage(sysAddr, u"Some available commands include /fasttravel and /speedboost. (/help not implemented properly because effort, apologies)");
+		if (entity->GetParentUser()->GetMaxGMLevel() > 0) {
+			ChatPackets::SendSystemMessage(sysAddr, u"Also available are /missions and /skipmission, if anyone gets stuck.");
+		}
+		return;
+	}
+
+	if (chatCommand == "fasttravel") {
+		if (args.size() == 0) {
+			ChatPackets::SendSystemMessage(sysAddr, u"Available destinations:");
+			ChatPackets::SendSystemMessage(sysAddr, u"- Venture Explorer");
+			ChatPackets::SendSystemMessage(sysAddr, u"- Avant Gardens");
+			ChatPackets::SendSystemMessage(sysAddr, u"- Nimbus Station");
+			ChatPackets::SendSystemMessage(sysAddr, u"- Nexus Tower");
+			ChatPackets::SendSystemMessage(sysAddr, u"- Gnarled Forest");
+			ChatPackets::SendSystemMessage(sysAddr, u"- Forbidden Valley");
+			ChatPackets::SendSystemMessage(sysAddr, u"- Crux Prime");
+			ChatPackets::SendSystemMessage(sysAddr, u"Usage: /fasttravel <place name>");
+		} else {
+			uint32_t zone;
+			if (args[0] == "ve" || args[0] == "venture" || args[0] == "Venture") {
+				zone = 1000;
+			}
+			else if (args[0] == "ag" || args[0] == "avant" || args[0] == "Avant") {
+				zone = 1100;
+			}
+			else if (args[0] == "ns" || args[0] == "nimbus" || args[0] == "Nimbus") {
+				zone = 1200;
+			}
+			else if (args[0] == "nt" || args[0] == "nexus" || args[0] == "Nexus") {
+				zone = 1900;
+			}
+			else if (args[0] == "gf" || args[0] == "gnarled" || args[0] == "Gnarled") {
+				zone = 1300;
+			}
+			else if (args[0] == "fv" || args[0] == "forbidden" || args[0] == "Forbidden") {
+				zone = 1400;
+			}
+			else if (args[0] == "cp" || args[0] == "crux" || args[0] == "Crux") {
+				zone = 1800;
+			} else {
+				ChatPackets::SendSystemMessage(sysAddr, u"Usage: /fasttravel <place name>");
+				return;
+			}
+			const auto objid = entity->GetObjectID();
+			GameMessages::SendPlayAnimation(entity, u"lup-teleport");
+			GameMessages::SendSetStunned(objid, PUSH, user->GetSystemAddress(), LWOOBJID_EMPTY, true, true, true, true, true, true, true, true);
+			ZoneInstanceManager::Instance()->RequestZoneTransfer(Game::server, zone, 0, false, [objid](bool mythranShift, uint32_t zoneID, uint32_t zoneInstance, uint32_t zoneClone, std::string serverIP, uint16_t serverPort) {
+				auto* entity = EntityManager::Instance()->GetEntity(objid);
+				if (entity == nullptr) {
+					return;
+				}
+				float transferTime = 3.32999992370605f;
+				entity->AddCallbackTimer(transferTime, [=] {
+					const auto sysAddr = entity->GetSystemAddress();
+					//ChatPackets::SendSystemMessage(sysAddr, u"Switching map...");
+					Game::logger->Log("UserManager", "Transferring %s to Zone %i (Instance %i | Clone %i | Mythran Shift: %s) with IP %s and Port %i\n", sysAddr.ToString(), zoneID, zoneInstance, zoneClone, mythranShift == true ? "true" : "false", serverIP.c_str(), serverPort);
+					if (entity->GetCharacter()) {
+						entity->GetCharacter()->SetZoneID(zoneID);
+						entity->GetCharacter()->SetZoneInstance(zoneInstance);
+						entity->GetCharacter()->SetZoneClone(zoneClone);
+						entity->GetComponent<CharacterComponent>()->SetLastRocketConfig(u"");
+					}
+					entity->GetCharacter()->SaveXMLToDatabase();
+					WorldPackets::SendTransferToWorld(sysAddr, serverIP, serverPort, mythranShift);
+				});
+			});
+		}
+		return;
+	}
+
+	if (chatCommand == "speedboost" && args.size() == 0) {
+		auto* buffComponent = entity->GetComponent<BuffComponent>();
+		if (buffComponent != nullptr) {
+			ChatPackets::SendSystemMessage(sysAddr, u"Giving you increased speed for an hour (or until you die).");
+			buffComponent->ApplyBuff(49, 3600, entity->GetObjectID());
+		}
+		return;
+	}
+
+	if (chatCommand == "missions") {
+		auto* missionComponent = entity->GetComponent<MissionComponent>();
+		if (missionComponent != nullptr) {
+			if (args.size() == 0) {
+				ChatPackets::SendSystemMessage(sysAddr, u"Current missions:");
+				for (auto& pair : missionComponent->GetMissions()) {
+					uint32_t missionid = pair.first;
+					auto* mission = pair.second;
+					if (!mission->IsMission() || !(mission->IsActive() || mission->IsReadyToComplete())) {
+						continue;
+					}
+					std::ostringstream out;
+					out << missionid;
+					if (mission->IsMission()) {
+						out << " (mission)";
+					}
+					if (mission->IsAvalible()) {
+						out << " (available)";
+					}
+					if (mission->IsActive()) {
+						out << " (active)";
+					}
+					if (mission->IsReadyToComplete()) {
+						out << " (completable)";
+					}
+					if (mission->IsComplete()) {
+						out << " (completed)";
+					}
+					if (missionComponent->HasMission(missionid)) {
+						out << " (current)";
+					}
+					ChatPackets::SendSystemMessage(sysAddr, GeneralUtils::ASCIIToUTF16(out.str().c_str()));
+				}
+			} else {
+				uint32_t missionid;
+				if (!GeneralUtils::TryParse(args[0], missionid)) {
+					ChatPackets::SendSystemMessage(sysAddr, u"Invalid mission ID.");
+					return;
+				}
+				auto* mission = missionComponent->GetMission(missionid);
+				ChatPackets::SendSystemMessage(sysAddr, GeneralUtils::ASCIIToUTF16(std::string("ID: ") + std::to_string(missionid)));
+				ChatPackets::SendSystemMessage(sysAddr, GeneralUtils::ASCIIToUTF16(std::string("IsMission: ") + (mission->IsMission() ? "true" : "false")));
+				ChatPackets::SendSystemMessage(sysAddr, GeneralUtils::ASCIIToUTF16(std::string("IsComplete: ") + (mission->IsComplete() ? "true" : "false")));
+				ChatPackets::SendSystemMessage(sysAddr, GeneralUtils::ASCIIToUTF16(std::string("IsActive: ") + (mission->IsActive() ? "true" : "false")));
+				ChatPackets::SendSystemMessage(sysAddr, GeneralUtils::ASCIIToUTF16(std::string("IsAvalible: ") + (mission->IsAvalible() ? "true" : "false")));
+				ChatPackets::SendSystemMessage(sysAddr, GeneralUtils::ASCIIToUTF16(std::string("IsReadyToComplete: ") + (mission->IsReadyToComplete() ? "true" : "false")));
+				ChatPackets::SendSystemMessage(sysAddr, GeneralUtils::ASCIIToUTF16(std::string("HasMission: ") + (missionComponent->HasMission(missionid) ? "true" : "false")));
+			}
+		}
+		return;
+	}
+
+	if (chatCommand == "skipmission" && args.size() > 0) {
+		uint32_t missionid;
+		if (!GeneralUtils::TryParse(args[0], missionid)) {
+			ChatPackets::SendSystemMessage(sysAddr, u"Invalid mission ID.");
+			return;
+		}
+		auto* missionComponent = entity->GetComponent<MissionComponent>();
+		if (missionComponent != nullptr && missionComponent->HasMission(missionid)) {
+			missionComponent->CompleteMission(missionid);
+		}
+		return;
+	}
+
+	// HackSoc-specific commands end
+
 	if (chatCommand == "pvp") {
 		auto* character = entity->GetComponent<CharacterComponent>();
 
