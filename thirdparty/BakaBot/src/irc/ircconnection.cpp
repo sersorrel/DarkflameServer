@@ -756,8 +756,6 @@ IRCConnection::~IRCConnection()
 
 void IRCConnection::send_line(std::string line)
 {
-	fprintf(stderr, ">>> %s\n", line.c_str());
-
 	line += "\r\n";
 	write(line.c_str(), line.length());
 }
@@ -803,9 +801,7 @@ void IRCConnection::quit(std::string reason)
 // here be dragons
 void IRCConnection::parse_line(std::string line_s, std::string& sender, std::string& command, std::vector<std::string>& params)
 {
-    fprintf(stderr, "<<< %s\n", line_s.c_str());
-
-	char *line = (char*) line_s.c_str(); // thanks, c++11
+    char *line = (char*) line_s.c_str(); // thanks, c++11
 
     int len = line_s.length();
 
