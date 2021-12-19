@@ -1,3 +1,4 @@
+#include "dZoneManager.h"
 #include "Game.h"
 #include "dCommonVars.h"
 #include "dZoneManager.h"
@@ -55,6 +56,7 @@ void dZoneManager::Initialize(const LWOZONEID& zoneID) {
     Game::logger->Log("dZoneManager", "Zone prepared in: %llu ms\n", (endTime - startTime));
 
 	VanityUtilities::SpawnVanity();
+    HacksocZoneChanges(zoneID.GetMapID());
 }
 
 dZoneManager::~dZoneManager() {
@@ -229,4 +231,14 @@ std::vector<Spawner*> dZoneManager::GetSpawnersInGroup(std::string group) {
 	}
 
 	return spawnersInGroup;
+}
+
+void dZoneManager::HacksocZoneChanges(const LWOMAPID mapID) {
+	switch (mapID) {
+        case 1200:
+		    // disable Kurt Tussle, preventing access to Nexus Tower
+            if (Game::config->GetValue("block_nexus_tower") == "1") {
+                dZoneManager::RemoveSpawner(4123168661387);
+            }
+	}
 }

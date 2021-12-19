@@ -42,6 +42,8 @@ public:
 	Entity* GetZoneControlObject() { return m_ZoneControlObject; }
 
 private:
+    void HacksocZoneChanges(const LWOMAPID mapID);
+
     static dZoneManager* m_Address; //Singleton
 	Zone* m_pZone;
 	LWOZONEID m_ZoneID;
