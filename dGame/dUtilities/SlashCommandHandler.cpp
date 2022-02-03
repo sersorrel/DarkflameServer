@@ -173,7 +173,7 @@ void SlashCommandHandler::HandleChatCommand(const std::u16string& command, Entit
 			ChatPackets::SendSystemMessage(sysAddr, u"Funkier commands (use with care):");
 			ChatPackets::SendSystemMessage(sysAddr, u"/missions [id]: show mission details, or list missions");
 			ChatPackets::SendSystemMessage(sysAddr, u"/skipmission <id>: instantly complete a mission");
-			ChatPackets::SendSystemMessage(sysAddr, u"/cancelmission <id>: undo marking a mission as accepted");
+			ChatPackets::SendSystemMessage(sysAddr, u"/cancelmission <id>: undo accepting a mission");
 		}
 		return;
 	}
