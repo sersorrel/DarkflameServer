@@ -165,9 +165,15 @@ void SlashCommandHandler::HandleChatCommand(const std::u16string& command, Entit
 	// HackSoc-specific commands start
 
 	if (chatCommand == "help") {
-		ChatPackets::SendSystemMessage(sysAddr, u"Some available commands include /fasttravel and /speedboost. (/help not implemented properly because effort, apologies)");
+		ChatPackets::SendSystemMessage(sysAddr, u"Some available commands:");
+		ChatPackets::SendSystemMessage(sysAddr, u"/fasttravel [location]: teleport to places");
+		ChatPackets::SendSystemMessage(sysAddr, u"/speedboost: increase your move speed");
+		ChatPackets::SendSystemMessage(sysAddr, u"/tp <name>: teleport to a player");
 		if (entity->GetParentUser()->GetMaxGMLevel() > 0) {
-			ChatPackets::SendSystemMessage(sysAddr, u"Also available are /missions and /skipmission, if anyone gets stuck.");
+			ChatPackets::SendSystemMessage(sysAddr, u"Funkier commands (use with care):");
+			ChatPackets::SendSystemMessage(sysAddr, u"/missions [id]: show mission details, or list missions");
+			ChatPackets::SendSystemMessage(sysAddr, u"/skipmission <id>: instantly complete a mission");
+			ChatPackets::SendSystemMessage(sysAddr, u"/cancelmission <id>: undo marking a mission as accepted");
 		}
 		return;
 	}
@@ -236,7 +242,7 @@ void SlashCommandHandler::HandleChatCommand(const std::u16string& command, Entit
 		return;
 	}
 
-	if (chatCommand == "speedboost" && args.size() == 0) {
+	if (chatCommand == "speedboost" && args.size() == 0) { // avoid shadowing the later developer-only command
 		auto* buffComponent = entity->GetComponent<BuffComponent>();
 		if (buffComponent != nullptr) {
 			ChatPackets::SendSystemMessage(sysAddr, u"Giving you increased speed for an hour (or until you die).");
@@ -285,13 +291,17 @@ void SlashCommandHandler::HandleChatCommand(const std::u16string& command, Entit
 					return;
 				}
 				auto* mission = missionComponent->GetMission(missionid);
-				ChatPackets::SendSystemMessage(sysAddr, GeneralUtils::ASCIIToUTF16(std::string("ID: ") + std::to_string(missionid)));
-				ChatPackets::SendSystemMessage(sysAddr, GeneralUtils::ASCIIToUTF16(std::string("IsMission: ") + (mission->IsMission() ? "true" : "false")));
-				ChatPackets::SendSystemMessage(sysAddr, GeneralUtils::ASCIIToUTF16(std::string("IsComplete: ") + (mission->IsComplete() ? "true" : "false")));
-				ChatPackets::SendSystemMessage(sysAddr, GeneralUtils::ASCIIToUTF16(std::string("IsActive: ") + (mission->IsActive() ? "true" : "false")));
-				ChatPackets::SendSystemMessage(sysAddr, GeneralUtils::ASCIIToUTF16(std::string("IsAvalible: ") + (mission->IsAvalible() ? "true" : "false")));
-				ChatPackets::SendSystemMessage(sysAddr, GeneralUtils::ASCIIToUTF16(std::string("IsReadyToComplete: ") + (mission->IsReadyToComplete() ? "true" : "false")));
-				ChatPackets::SendSystemMessage(sysAddr, GeneralUtils::ASCIIToUTF16(std::string("HasMission: ") + (missionComponent->HasMission(missionid) ? "true" : "false")));
+				if (mission != nullptr) {
+					ChatPackets::SendSystemMessage(sysAddr, GeneralUtils::ASCIIToUTF16(std::string("ID: ") + std::to_string(missionid)));
+					ChatPackets::SendSystemMessage(sysAddr, GeneralUtils::ASCIIToUTF16(std::string("IsMission: ") + (mission->IsMission() ? "true" : "false")));
+					ChatPackets::SendSystemMessage(sysAddr, GeneralUtils::ASCIIToUTF16(std::string("IsComplete: ") + (mission->IsComplete() ? "true" : "false")));
+					ChatPackets::SendSystemMessage(sysAddr, GeneralUtils::ASCIIToUTF16(std::string("IsActive: ") + (mission->IsActive() ? "true" : "false")));
+					ChatPackets::SendSystemMessage(sysAddr, GeneralUtils::ASCIIToUTF16(std::string("IsAvalible: ") + (mission->IsAvalible() ? "true" : "false")));
+					ChatPackets::SendSystemMessage(sysAddr, GeneralUtils::ASCIIToUTF16(std::string("IsReadyToComplete: ") + (mission->IsReadyToComplete() ? "true" : "false")));
+					ChatPackets::SendSystemMessage(sysAddr, GeneralUtils::ASCIIToUTF16(std::string("HasMission: ") + (missionComponent->HasMission(missionid) ? "true" : "false")));
+				} else {
+					ChatPackets::SendSystemMessage(sysAddr, u"Unknown mission.");
+				}
 			}
 		}
 		return;
@@ -307,6 +317,34 @@ void SlashCommandHandler::HandleChatCommand(const std::u16string& command, Entit
 		if (missionComponent != nullptr && missionComponent->HasMission(missionid)) {
 			missionComponent->CompleteMission(missionid);
 		}
+		return;
+	}
+
+	if (chatCommand == "cancelmission" && args.size() > 0) {
+		uint32_t missionid;
+		if (!GeneralUtils::TryParse(args[0], missionid)) {
+			ChatPackets::SendSystemMessage(sysAddr, u"Invalid mission ID.");
+			return;
+		}
+		auto* missionComponent = entity->GetComponent<MissionComponent>();
+		if (missionComponent != nullptr && missionComponent->HasMission(missionid)) {
+			auto* mission = missionComponent->GetMission(missionid);
+			if (mission != nullptr && mission->IsActive()) {
+				mission->MakeAvalible();
+			}
+		}
+		return;
+	}
+
+	if (chatCommand == "tp" && args.size() == 1) {
+		auto* target = Player::GetPlayer(args[0]);
+		if (target == nullptr) {
+			ChatPackets::SendSystemMessage(sysAddr, u"Unknown character name.");
+			return;
+		}
+		auto targetPos = target->GetPosition();
+		targetPos.SetY(targetPos.GetY() + 1);
+		GameMessages::SendTeleport(entity->GetObjectID(), targetPos, NiQuaternion(), sysAddr);
 		return;
 	}
 
