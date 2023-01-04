@@ -170,6 +170,7 @@ std::string UserManager::GetPredefinedName(uint32_t firstNameIndex, uint32_t mid
 }
 
 bool UserManager::IsNamePreapproved(const std::string& requestedName) {
+	return true;
 	for (std::string& s : m_PreapprovedNames) {
 		if (s == requestedName) return true;
 	}
